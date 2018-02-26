@@ -32,19 +32,24 @@ sys.path.append(join(CURDIR, '..', 'src'))
 
 COMMON_OPTS = ('--log', 'NONE', '--report', 'NONE')
 
-USERNAME = environ.get('RFSL_TEST_USERNAME')
-PASSWORD = environ.get('RFSL_TEST_PASSWORD')
-if USERNAME and PASSWORD:
-    COMMON_OPTS += (
-        '--variable', 'USERNAME:' + USERNAME,
-        '--variable', 'PASSWORD:' + PASSWORD
-    )
+def check_environment():
+    global COMMON_OPTS
+    env_prefix = 'RFSL_'
 
-KEY_USERNAME = environ.get('RFSL_TESTKEY_USERNAME')
-if KEY_USERNAME:
-    COMMON_OPTS += (
-        '--variable', 'KEY_USERNAME:' + KEY_USERNAME
-    )
+    var_list = [
+        'CYGWIN_HOME',
+        'KEY_USERNAME',
+        'PASSWORD',
+        'USERHOME',
+        'USERNAME',
+    ]
+
+    for var_name in var_list:
+        value = environ.get(env_prefix + var_name)
+        if value:
+            COMMON_OPTS += (
+                '--variable', var_name + ':' + value.strip()
+            )
 
 def atests(*opts):
     if os.name == 'java':
@@ -81,6 +86,7 @@ if __name__ == '__main__':
         print(__doc__)
         rc = 251
     else:
+        check_environment()
         rc = atests(*sys.argv[1:])
     print "\nAfter status check there were %s failures." % rc
     sys.exit(rc)
